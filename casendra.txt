@@ -1,0 +1,644 @@
+https://etherpad.openstack.org/p/9AwkC2HnZP
+http://www.apache.org/dyn/closer.lua/cassandra/3.11.0/apache-cassandra-3.11.0-bin.tar.gz
+
+hasmap reads before write but C not.
+c is data store.
+NO master node in Cassendra.
+C driver auto discover all the cluster at the time of initilization nodes and ip.
+casendra is AP means availabiliy and partition not sure consistency.
+c#  driver drives the nodes.
+cassendra.yml config file.
+seeds no 1 is  first node in cassendra.
+its besically p2p system.
+nodes can be  with diffrent confiuration.
+node decommition and node down.
+bootstap is the main process in caseendra.
+cluster_name is common name where all node are litneing.
+node decommiion
+node remove
+node assesinate
+node -host repair
+seed.list
+gosip and hndshKING
+no time zone in cassendra its only based on millies from 1970.
+C# uses a hashing marmarthree algorithm when inserting record and return type is java LONG type  -2to power 63 to 2 to 63.
+ joining nodd is reponsible for recalulating token distribution which is long range or not.
+ replication copies are placed in clockwise next nodes based on replication favctor.
+system.local and system.peers is in every node which contain the info of self and other nodes info. 
+ snitch is used to avoid to putting replika in same rack also responsible for distribiting data equally.
+ snitch property file contain the list of ips and rac information for the cluster.
+ only for these cases start range is calculated -key space alter/add/remove/key space creation 
+ node/rack/set of rack
+ all the datacenter put together is called cluster. 
+ machine configuration should be same for equeal performance everyth=ime.
+ SEDA archetechture.-stages event driven archetechture
+ CQL- cassendra queary language used for gosip its a payload.
+ 
+ Open cassandra.yaml and uncomment and chnage the below attributes
+ 
+ cluster_name
+ hinted_directory
+ aouthentigator
+ authorizer
+ partitioner
+ data_file_directories:
+ commitlog_directory
+ saved_caches_directory
+ seed_provider
+ disk_optimization_strategy
+ listen_address
+ rpc_address
+ endpoint_snitch
+ 
+ cassandra-rackdc.properties- change the dc name accordingly if required.
+ 
+ open cmd
+ goto C:\Users\gpw\Downloads\apache-cassandra-3.11.0\bin
+ run cassandra.bat
+ 
+ open new cmd
+ nodetool.bat status
+ nodetool.bat describecluster
+ 
+ open new cmd
+ run cqlsh.bat -u cassandra -p cassandra
+ 
+ select * from syste.local;
+ select * from syste.peers;
+ CREATE KEYSPACE IF NOT EXISTS stockdb WITH replication = {'class':'NetworkTopologyStrategy', 'dc1' : 1};
+
+CREATE TABLE stockdb.user (
+  user_id VARCHAR,
+  display_name VARCHAR,
+  first_name VARCHAR,
+  last_name VARCHAR,
+  PRIMARY KEY (user_id)
+);
+
+insert into stockdb.user (user_id, display_name, first_name, last_name) values ('u1', 'NM2', 'rakesh', 'panwar' );
+
+update stockdb.user set display_name = 'NM-100', first_name = 'Nirmallya' where user_id = 'u2';
+
+insert into stockdb.user(user_id, last_name) values ('u2', 'Mukherjee22');
+
+delete from stockdb.user where user_id = 'u200';
+
+describe KEYSPACES;
+
+describe tables;
+
+describe table stockdb.table;
+
+partition ket/row key and clustering column is the actul primary key of cassandra table;
+
+primary key(master_id,created_hh,created_min)
+master_id is parttion key and rest are clustering column; 
+
+we can not use any non primary key column in where couse only alternative is secondary index but that is not prefferd.
+we can create a separate table with diff parition key for this problem.
+
+noraml rdbms provides the limited space and retrive any way you want but casandra its just oposit; 
+
+for every update and delete new record is inseted in db
+dont use the clustering column as varchar.
+
+overhaed meanse-timestamp+size of 
+we can create a my primary key as byte buffer to minimise overhaed. 
+
+
+consistency level-
+one
+quorum -mejority
+all
+
+tracin on;
+
+write consistency
+consistency is directly propsanal to level.
+
+read consistency;
+one-read request goes to onne host
+quorum-
+all
+
+REPAIR TOOL.
+
+read path ND WRITE PATH
+
+WHEN MUTATION IS HANDED OVER TO NODE ,NODE PERFORM THE BELOW OPERATIONS.
+
+
+update stockdb.user using ttl 30 set last_name='pan' where user_id='u2'
+
+
+Now insert one more data to cassandra(please start it once)
+	and type : nodetool.bat flush
+	Observe.. files go replicated in the folder.
+
+	Create folder flush at same level
+	nodetool.bat flush
+	nodetool.bat refresh stockdb user11
+
+	creating snapshot
+	nodetool.bat snapshot
+
+	delete a record
+		delete last_name from stockdb.user11 where user_id = 'u1';
+		select * from stockdb.user11;
+
+		nodetool.bat compact
+
+		nodetool.bat getsstables stockdb user11 u1; // will give path to some data 
+		copy that path and 
+		go to tool\bin and fire sstabledump.bat -d Now insert one more data to cassandra(please start it once)
+	and type : nodetool.bat flush
+	Observe.. files go replicated in the folder.
+
+	Create folder flush at same level
+	nodetool.bat flush
+	nodetool.bat refresh stockdb user11
+
+	creating snapshot
+	nodetool.bat snapshot
+
+	delete a record
+		delete last_name from stockdb.user11 where user_id = 'u1';
+		select * from stockdb.user11;
+
+		nodetool.bat compact
+
+		nodetool.bat getsstables stockdb user11 u1; // will give path to some data 
+		copy that path and 
+		go to tool\bin and fire sstabledump.bat -d sstabledump.bat -d C:\var\lib\cassandra\data\stockdb\user11-bcd3ded06bd411e78c47cd5a8b8f9c86\mc-9-big-Data.db
+		check tombstone
+		
+		delete first_name;
+		
+		sstabledump.bat -d C:\var\lib\cassandra\data\stockdb\user-01ee7f506ae211e7a90985651a340f0a\mc-10-big-Data.db
+		
+		check tombstone
+		
+		
+		select * from stockdb.user where last_name='rpanwar' ALLOW FILTERING' //dont use
+		Apache Cassandra - Blackrock
+This is a common text pad visible to everyone with all permissions Please do not "cut", please always do "copy".
+This place will be used for uploading scripts and other information during the 3 days
+
+
+
+CREATE TABLE stockdb.userstocklist (
+  stock_symbol VARCHAR,
+  user_id VARCHAR,
+  display_name VARCHAR,
+  visibility VARCHAR,
+  active BOOLEAN,
+  quantity INT,
+  PRIMARY KEY (user_id, stock_symbol)
+ );
+
+CREATE TABLE stockdb.stockprice (
+  stock_symbol VARCHAR,
+  trade_date INT,
+  trade_time INT,
+  company_name VARCHAR,
+  start_price DOUBLE,
+  current_price DOUBLE,
+  exchange_id VARCHAR,
+  industry_id INT,
+  PRIMARY KEY ((stock_symbol, trade_date), trade_time))
+  with clustering order by (trade_time desc);
+
+BEGIN BATCH
+ INSERT INTO stockdb.user(user_id,display_name,first_name,last_name) VALUES ('u1','Sister of Venus','Serena','Williams');
+ INSERT INTO stockdb.user(user_id,display_name,first_name,last_name) VALUES ('u2','Tiger Woods','Eldrick','Woods');
+ INSERT INTO stockdb.user(user_id,display_name,first_name,last_name) VALUES ('u3','Wizard of Wall Street','Warren','Buffett');
+ INSERT INTO stockdb.user(user_id,display_name,first_name,last_name) VALUES ('u4','Two-Time World Series Winner','Buster','Posey');
+ INSERT INTO stockdb.user(user_id,display_name,first_name,last_name) VALUES ('u5','King James','Lebron','James');
+ INSERT INTO stockdb.user(user_id,display_name,first_name,last_name) VALUES ('u6','Doctor Liberty','Ron','Paul');
+ INSERT INTO stockdb.user(user_id,display_name,first_name,last_name) VALUES ('u7','Friend with Benefits','Justin','Timberlake');
+ INSERT INTO stockdb.user(user_id,display_name,first_name,last_name) VALUES ('u8','Child of Destiny','Beyonce','Knowles');
+ INSERT INTO stockdb.user(user_id,display_name,first_name,last_name) VALUES ('u9','The Ex-Governator','Arnold','Schwarzenegger');
+ INSERT INTO stockdb.user(user_id,display_name,first_name,last_name) VALUES ('u10','Two-Time Super Bowl Winner','Eli','Manning');
+APPLY BATCH;
+
+
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('GLUU','u10','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('NCI','u10','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('PENN','u10','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('EDAP','u10','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('NCBC','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('BDSI','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('NETE','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('AKS','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('AAPL','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('EPAM','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('AMCX','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('VCBI','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('EFT','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('HAST','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('BKI','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('GEVA','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('MEMP','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('MJN','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('THM','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('CBOE','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('ESBF','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('BHD','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('RRD','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('IIVI','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('CVR','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('GUT','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('BOBE','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('BGS','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('CIFC','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('LABC','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('TKR','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('BIOS','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('FOE','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('LSTR','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('CPT','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('BDGE','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('CBEY','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('FOLD','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('NTLS','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('NSSC','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('SWX','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('HMN','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('CJJD','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('IDTI','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('TTMI','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('HHC','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('FFNW','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('RXN','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('EXC','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('CRDC','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('LDL','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('HCOM','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('UIS','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('IBIO','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('HOLL','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('JEC','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('GPX','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('INFI','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('URZ','u2','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('TWIN','u2','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('ATRI','u2','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('STEL','u2','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('BANF','u3','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('DGLY','u3','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('IIN','u3','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('AIMC','u3','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('HYF','u3','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('SIAL','u3','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('MNI','u4','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('HRS','u4','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('LVB','u4','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('MMYT','u4','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('OGEN','u4','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('ITC','u5','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('XRAY','u5','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('SNCR','u5','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('PPC','u6','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('ETRM','u6','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('CMRE','u6','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('NYT','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('BANC','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('PZN','u7','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('UNTK','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('ADEP','u8','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('FISI','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('EC','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('ICE','u9','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('FLIC','u10','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('IMGN','u10','Name', 'PUBLIC',true);
+INSERT INTO stockdb.userstocklist (stock_symbol,user_id,display_name,visibility,active) VALUES ('ETE','u10','Name', 'PUBLIC',true);
+
+
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('FOE',20140815,103001,'NAME',19.69,19.69,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('LSTR',20140815,103002,'NAME',27.71,27.71,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('CPT',20140815,103003,'NAME',27.87,27.87,'NYSE',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('BDGE',20140815,103004,'NAME',12.83,12.83,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('CBEY',20140815,103005,'NAME',52.01,52.01,'NYSE',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('CJJD',20140815,103006,'NAME',18.31,18.31,'NASDAQ',1);
+
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('FOE',20140814,103001,'NAME',19.69,18.69,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('LSTR',20140814,103002,'NAME',27.71,28.71,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('CPT',20140814,103003,'NAME',27.87,25.87,'NYSE',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('BDGE',20140814,103004,'NAME',12.83,10.83,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('CBEY',20140814,103005,'NAME',52.01,58.98,'NYSE',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('CJJD',20140814,103006,'NAME',18.31,17.31,'NASDAQ',1);
+
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('INFI',20140815,103001,'NAME',19.69,19.69,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('URZ',20140815,103002,'NAME',19.69,27.71,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('TWIN',20140815,103003,'NAME',19.69,27.87,'NYSE',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('ATRI',20140815,103004,'NAME',19.69,12.83,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('STEL',20140815,103005,'NAME',19.69,12.83,'NYSE',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('ITC',20140815,103001,'NAME',19.69,19.69,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('XRAY',20140815,103002,'NAME',19.69,27.71,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('SNCR',20140815,103003,'NAME',19.69,27.87,'NYSE',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('PPC',20140815,103001,'NAME',19.69,19.69,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('ETRM',20140815,103002,'NAME',19.69,27.71,'NASDAQ',1);
+insert into stockdb.stockprice(stock_symbol,trade_date,trade_time,company_name,start_price,current_price,exchange_id,industry_id) values('CMRE',20140815,103003,'NAME',19.69,27.87,'NYSE',1);
+
+
+
+
+CREATE TABLE stockdb.dailysummary (
+  stock_symbol VARCHAR,
+  trade_date TIMESTAMP,
+  price_open DECIMAL,
+  price_close DECIMAL,
+  price_high DECIMAL,
+  price_low DECIMAL,
+  share_volume INT,
+  PRIMARY KEY (stock_symbol, trade_date)
+) WITH CLUSTERING ORDER BY (trade_date DESC);
+
+--For importing
+COPY stockdb.dailysummary (stock_symbol, trade_date, price_close, price_high, price_low, price_open, share_volume)
+ FROM '/opt/Dropbox/1.Training/2.TrainingMaterial/Cassandra/Hands-On/Cassandra-training-2.csv';
+
+--You can download the CSV from here https://storage.googleapis.com/skl-training/cassandra/Cassandra-training-2.csv
+
+COPY stockdb.dailysummary (stock_symbol, trade_date, price_close, price_high, price_low, price_open, share_volume)
+ FROM 'C:\Users\gpw\Downloads\Cassandra-training-2.csv'
+ 
+ use stockdb;
+ 
+ 
+ Apache Cassandra - Blackrock
+This is a common text pad visible to everyone with all permissions Please do not "cut", please always do "copy".
+This place will be used for uploading scripts and other information during the 3 days
+
+
+select JSON * from stockdb.user;
+
+CREATE TABLE stockdb.comments (
+    id int PRIMARY KEY,
+    comments_map map<int, text>
+);
+
+//Please type in a single line, below is for better formatting only
+INSERT INTO stockdb.comments JSON
+'{"id": 10,
+  "comments_map": {"1": "This is comment 1",
+                               "2": "Not too long comments though",
+                               "3": "Not too many either"
+                        }
+ }';
+
+select * from stockdb.comments;
+
+
+Apache Cassandra - Blackrock
+This is a common text pad visible to everyone with all permissions Please do not "cut", please always do "copy".
+This place will be used for uploading scripts and other information during the 3 days
+
+
+CREATE TABLE stockdb.profile
+ (pid int PRIMARY KEY, name text, age int, birthday text, country text);
+
+insert into stockdb.profile (pid, name, age, birthday, country)        values (1, 'Name 1', 25, 'Birthday 1', 'India');
+insert into stockdb.profile (pid, name, age, birthday, country)        values (2, 'Name 2', 30, 'Birthday 2', 'India');
+insert into stockdb.profile (pid, name, age, birthday, country)        values (3, 'Name 3', 30, 'Birthday 3', 'India');
+insert into stockdb.profile (pid, name, age, birthday, country)        values (4, 'Name 4', 30, 'Birthday 4', 'USA');
+insert into stockdb.profile (pid, name, age, birthday, country)        values (5, 'Name 5', 40, 'Birthday 5', 'UK');
+insert into stockdb.profile (pid, name, age, birthday, country)        values (6, 'Name 6', 40, 'Birthday 6', 'AUS');
+
+select * from stockdb.profile where age = 30;
+
+CREATE MATERIALIZED VIEW stockdb.profile_mv1
+ AS SELECT age, birthday, name
+ FROM stockdb.profile
+ WHERE age IS NOT NULL AND pid IS NOT NULL
+ PRIMARY KEY (age, pid);
+
+select * from stockdb.profile_mv1 where age = 30;
+
+
+Apache Cassandra - Blackrock
+This is a common text pad visible to everyone with all permissions Please do not "cut", please always do "copy".
+This place will be used for uploading scripts and other information during the 3 days
+
+CREATE INDEX on address_book.users (name);
+
+SELECT id FROM address_book.users WHERE name = {firstname: 'Dennis', lastname: 'Ritchie'};
+
+
+
+Apache Cassandra - Blackrock
+This is a common text pad visible to everyone with all permissions Please do not "cut", please always do "copy".
+This place will be used for uploading scripts and other information during the 3 day
+CREATE INDEX on address_book.users (name);
+
+SELECT id FROM address_book.users WHERE name = {firstname: 'Dennis', lastname: 'Ritchie'};
+
+cassandra@cqlsh:stockdb> CREATE KEYSPACE IF NOT EXISTS address_book WITH replication = {'class':'NetworkTopologyStrategy', 'dc1' : 1};
+cassandra@cqlsh:stockdb> 
+cassandra@cqlsh:stockdb> 
+cassandra@cqlsh:stockdb> CREATE TYPE address_book.address (
+           ...   street text,
+           ...   city text,
+           ...   zip_code int,
+           ...   phones set<text>
+           ... );
+cassandra@cqlsh:stockdb> CREATE TYPE address_book.fullname (
+           ...   firstname text,
+           ...   lastname text
+           ... );
+cassandra@cqlsh:stockdb> CREATE TABLE address_book.users (
+           ...   id int PRIMARY KEY,
+           ...   name frozen <fullname>,
+           ...   address_map map<text, frozen <address>>     // a collection map
+           ... );
+cassandra@cqlsh:stockdb> 
+cassandra@cqlsh:stockdb> INSERT INTO address_book.users (id, name)
+           ...  VALUES (1, {firstname: 'Dennis', lastname: 'Ritchie'});
+cassandra@cqlsh:stockdb> UPDATE address_book.users
+           ...  SET address_map = address_map + {'home': { street: '9779 Forest Lane',
+           ...                                         city: 'Dallas',
+           ...                                         zip_code: 75015,
+           ...                                         phones: {'001 972 555 6666'}
+           ...                                       }
+           ...                              }
+           ... where id=1;
+cassandra@cqlsh:stockdb> select * from address_book.users;
+
+
+
+nodetool.bat stopdaemon
+
+Apache Cassandra - Blackrock
+This is a common text pad visible to everyone with all permissions Please do not "cut", please always do "copy".
+This place will be used for uploading scripts and other information during the 3 day
+
+
+--**************************************************************************************
+-- Use the stock DB keyspace for these exercises
+-- C* yaml needs to be modified to enable the UDF
+--**************************************************************************************
+select * from dailysummary where stock_symbol = 'ABTL';
+
+select count(1) from dailysummary where stock_symbol = 'ABTL';
+
+select sum(price_close) from dailysummary where stock_symbol = 'ABTL';
+
+select min(price_close) from dailysummary where stock_symbol = 'ABTL';
+
+select max(price_close) from dailysummary where stock_symbol = 'ABTL';
+
+select avg(price_close) from dailysummary where stock_symbol = 'ABTL';
+
+select stock_symbol, max(price_close) from stockdb.dailysummary where stock_symbol in ('DFZ','ABTL','FDX') group by stock_symbol;
+
+
+
+select stock_symbol, max(price_close) from stockdb.dailysummary where stock_symbol in ('DFZ') group by stock_symbol;
+
+
+--**************************************************************************************
+create or replace function stockdb.stax (inp decimal) called on null input returns double language java as ' return (inp.doubleValue() * 0.15); ';
+
+//Q: write a UDF that calculates the selling price factoring in 7.5% VAT
+create or replace function stockdb.sellprice (inp decimal) called on null input returns double language java as ' return (inp.doubleValue() + inp.doubleValue() * 0.075); ';
+
+select price_close, stockdb.stax(price_close) as st, stockdb.sellprice(price_close) as sp
+ from stockdb.dailysummary
+where stock_symbol = 'AAP';
+
+
+
+--**************************************************************************************
+create or replace function stockdb.upper(inp text) called on null input returns text language java as
+ ' String  newVal = (String) inp; return newVal.toUpperCase(); ';
+
+--This version of cut does substr from the start
+create or replace function stockdb.substr(inp text, start int, end int) called on null input returns text language java as
+ ' String  newVal = (String) inp; return newVal.substring(start, end); ';
+
+create or replace function stockdb.concat(inp1 text, inp2 text, jstr text) called on null input returns text language java as
+ ' String newVal1 = (String) inp1;
+   String newVal2 = (String) inp2;
+   String joinStr = (String) jstr;
+   return newVal1 + joinStr + newVal2;
+';
+
+select stockdb.concat(first_name, last_name, ' ') from stockdb.user;
+
+select first_name, stockdb.upper(first_name), stockdb.substr(first_name, 0, 2), stockdb.concat(first_name, last_name, '-')
+ from stockdb.user ;
+
+select first_name, last_name, stockdb.upper(first_name) as FNAME, stockdb.substr(first_name, 0, 2) as SUB,
+       stockdb.concat(first_name, stockdb.substr(first_name, 0, 2), ' ') as CLUB
+ from stockdb.user ;
+
+
+
+--**************************************************************************************
+--Notice we are creating our own version of avg!
+drop aggregate stockdb.avg;
+drop function stockdb.avg_final;
+drop function stockdb.avg_state;
+
+//This is fired for all the rows in the result and is executed by the coordinator
+create or replace function stockdb.avg_state (state tuple<int, double>, colval double)
+ called on null input returns tuple<int, double> language java as '
+ if(colval!=null) {
+   state.setInt(0, state.getInt(0)+1);
+   state.setDouble(1, state.getDouble(1)+colval.doubleValue());
+ }
+ return state;
+';
+
+//This is an optional step but maybe a good practice to have it anyways
+create or replace function stockdb.avg_final (state tuple<int, double>)
+ called on null input returns double language java as '
+ double r = 0;
+ if(state.getInt(0) == 0) return null;
+ r = state.getDouble(1);
+ r /= state.getInt(0);
+ return Double.valueOf(r);
+';
+
+create or replace aggregate stockdb.avg(double)
+ sfunc avg_state stype tuple<int, double> finalfunc avg_final initcond(0,0.0);
+
+select stockdb.avg(current_price) from stockdb.stockprice;
+
+
+
+--**************************************************************************************
+-- Q: Write a Range function using the formula max value - min value
+drop aggregate stockdb.range;
+drop function stockdb.range_final;
+drop function stockdb.range_state(tuple<double, double, boolean>, double);
+
+create or replace function stockdb.range_state (state tuple<double, double, boolean>, colval double)
+ called on null input returns tuple<double, double, boolean> language java as '
+ if(colval!=null) {
+   if(state.getBool(2)==true) {
+      //Set the min in first and max in the second element of the tuple
+      if(state.getDouble(0) > colval.doubleValue()) state.setDouble(0, colval.doubleValue());
+      if(state.getDouble(1) < colval.doubleValue()) state.setDouble(1, colval.doubleValue());
+   } else {
+      //First scenario where the tuple is initialized, store the max as well as the min to the same element
+      state.setDouble(0, colval.doubleValue());
+      state.setDouble(1, colval.doubleValue());
+      state.setBool(2, true);
+   }
+ }
+ return state;
+';
+
+create or replace function stockdb.range_final (state tuple<double, double, boolean>)
+ called on null input returns double language java as '
+ return Double.valueOf(state.getDouble(1) - state.getDouble(0));
+';
+
+create or replace aggregate stockdb.range (double)
+ sfunc range_state stype tuple<double, double, boolean> finalfunc range_final initcond(0.0, 0.0, false);
+
+select stockdb.range(current_price) from stockdb.stockprice limit 1;
+
+select max(current_price) as max, min(current_price) as min, stockdb.range(current_price) as range
+ from stockdb.stockprice limit 1;
+
+
+
+--**************************************************************************************
+create or replace function stockdb.stax (inp decimal) called on null input returns double language java as ' return (inp.doubleValue() * 0.15); ';
+
+//Q: write a UDF that calculates the selling price factoring in 7.5% VAT
+create or replace function stockdb.sellprice (inp decimal) called on null input returns double language java as ' return (inp.doubleValue() + inp.doubleValue() * 0.075); ';
+
+select price_close, stockdb.stax(price_close) as st, stockdb.sellprice(price_close) as sp
+ from stockdb.dailysummary
+where stock_symbol = 'AAP';
+
+
+
+--**************************************************************************************
+create or replace function stockdb.upper(inp text) called on null input returns text language java as
+ ' String  newVal = (String) inp; return newVal.toUpperCase(); ';
+
+--This version of cut does substr from the start
+create or replace function stockdb.substr(inp text, start int, end int) called on null input returns text language java as
+ ' String  newVal = (String) inp; return newVal.substring(start, end); ';
+
+create or replace function stockdb.concat(inp1 text, inp2 text, jstr text) called on null input returns text language java as
+ ' String newVal1 = (String) inp1;
+   String newVal2 = (String) inp2;
+   String joinStr = (String) jstr;
+   return newVal1 + joinStr + newVal2;
+';
+
+select stockdb.concat(first_name, last_name, ' ') from stockdb.user;
+
+select first_name, stockdb.upper(first_name), stockdb.substr(first_name, 0, 2), stockdb.concat(first_name, last_name, '-')
+ from stockdb.user ;
+
+select first_name, last_name, stockdb.upper(first_name) as FNAME, stockdb.substr(first_name, 0, 2) as SUB,
+       stockdb.concat(first_name, stockdb.substr(first_name, 0, 2), ' ') as CLUB
+ from stockdb.user ;
+
+
