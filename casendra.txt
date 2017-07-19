@@ -641,4 +641,98 @@ select first_name, last_name, stockdb.upper(first_name) as FNAME, stockdb.substr
        stockdb.concat(first_name, stockdb.substr(first_name, 0, 2), ' ') as CLUB
  from stockdb.user ;
 
+ 
+ 
+ create or replace function stockdb.concat(inp1 text, inp2 text, jstr text) called on null input returns text language java as
+ ' String newVal1 = (String) inp1;
+   String newVal2 = (String) inp2;
+   String joinStr = (String) jstr;
+';
+
+
+selec
+t first_name, stockdb.upper(first_name), stockdb.substr(first_name, 0, 2), stockdb.concat(first_name, last_name, '-')
+ from stockdb.user ;
+select first_name, last_name, stockdb.upper(first_name) as FNAME, stockdb.substr(first_name, 0, 2) as SUB,
+       stockdb.concat(first_name, stockdb.substr(first_name, 0, 2), ' ') as CLUB
+ from stockdb.user ;
+
+
+
+--**************************************************************************************
+--Notice we are creating our own version of avg!
+drop aggregate stockdb.avg;
+drop function stockdb.avg_final;
+drop function stockdb.avg_state;
+
+//This is fired for all the rows in the result and is executed by the coordinator
+create or replace function stockdb.avg_state (state tuple<int, double>, colval double)
+ called on null input returns tuple<int, double> language java as '
+ if(colval!=null) {
+   state.setInt(0, state.getInt(0)+1);
+   state.setDouble(1, state.getDouble(1)+colval.doubleValue());
+ }
+ return state;
+';
+
+//This is an optional step but maybe a good practice to have it anyways
+create or replace function stockdb.avg_final (state tuple<int, double>)
+ called on null input returns double language java as '
+ double r = 0;
+ if(state.getInt(0) == 0) return null;
+ r = state.getDouble(1);
+ r /= state.getInt(0);
+ return Double.valueOf(r);
+';
+
+create or replace aggregate stockdb.avg(double)
+ sfunc avg_state stype tuple<int, double> finalfunc avg_final initcond(0,0.0);
+
+select stockdb.avg(current_price) from stockdb.stockprice;
+
+
+
+--**************************************************************************************
+-- Q: Write a Range function using the formula max value - min value
+drop aggregate stockdb.range;
+drop function stockdb.range_final;
+drop function stockdb.range_state(tuple<double, double, boolean>, double);
+
+create or replace function stockdb.range_state (state tuple<double, double, boolean>, colval double)
+ called on null input returns tuple<double, double, boolean> language java as '
+ if(colval!=null) {
+   if(state.getBool(2)==true) {
+      //Set the min in first and max in the second element of the tuple
+      if(state.getDouble(0) > colval.doubleValue()) state.setDouble(0, colval.doubleValue());
+      if(state.getDouble(1) < colval.doubleValue()) state.setDouble(1, colval.doubleValue());
+   } else {
+      //First scenario where the tuple is initialized, store the max as well as the min to the same element
+      state.setDouble(0, colval.doubleValue());
+      state.setDouble(1, colval.doubleValue());
+      state.setBool(2, true);
+   }
+ }
+ return state;
+';
+
+create or replace function stockdb.range_final (state tuple<double, double, boolean>)
+ called on null input returns double language java as '
+ return Double.valueOf(state.getDouble(1) - state.getDouble(0));
+';
+
+create or replace aggregate stockdb.range (double)
+ sfunc range_state stype tuple<double, double, boolean> finalfunc range_final initcond(0.0, 0.0, false);
+
+select stockdb.range(current_price) from stockdb.stockprice limit 1;
+
+select max(current_price) as max, min(current_price) as min, stockdb.range(current_price) as range
+ from stockdb.stockprice limit 1;
+
+ 
+ cassandraclient.java
+ 
+
+
+
+
 
